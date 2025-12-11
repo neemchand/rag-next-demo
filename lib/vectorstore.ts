@@ -1,33 +1,53 @@
-import { FaissStore } from "@langchain/community/vectorstores/faiss";
+import { Chroma } from "@langchain/community/vectorstores/chroma";
 import { Document } from "@langchain/core/documents";
 import { embeddings } from "./embeddings";
 
 /**
+ * ChromaDB configuration
+ * Collection name for storing RAG documents
+ */
+const COLLECTION_NAME = "rag_documents";
+
+/**
  * Global vector store instance
- * Persists in memory during server runtime
+ * Persists to disk in ./chroma_data directory
  */
 declare global {
   // eslint-disable-next-line no-var
-  var vectorStore: FaissStore | undefined;
+  var vectorStore: Chroma | undefined;
 }
 
 /**
- * Get or create the global FAISS vector store
+ * Get or create the ChromaDB vector store
+ * Data persists across server restarts
+ * Uses embedded mode (no server required)
  */
-export async function getVectorStore(): Promise<FaissStore> {
+export async function getVectorStore(): Promise<Chroma> {
   if (!global.vectorStore) {
-    // Initialize with an empty document to create the store
-    const emptyDoc = new Document({
-      pageContent: "Initialization document",
-      metadata: { source: "init" },
-    });
-    
-    global.vectorStore = await FaissStore.fromDocuments(
-      [emptyDoc],
-      embeddings
-    );
+    try {
+      // Try to load existing collection
+      global.vectorStore = await Chroma.fromExistingCollection(embeddings, {
+        collectionName: COLLECTION_NAME,
+        url: process.env.CHROMA_URL || "http://localhost:8000",
+      });
+    } catch (error) {
+      // If collection doesn't exist, create it with an initialization document
+      const emptyDoc = new Document({
+        pageContent: "Initialization document",
+        metadata: { source: "init" },
+      });
+
+      global.vectorStore = await Chroma.fromDocuments(
+        [emptyDoc],
+        embeddings,
+        {
+          collectionName: COLLECTION_NAME,
+          url: process.env.CHROMA_URL || "http://localhost:8000",
+        }
+      );
+    }
   }
-  
+
   return global.vectorStore;
 }
 
