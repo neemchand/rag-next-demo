@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { executeAgenticRAG } from "@/lib/agentic-rag";
 
-// Force Node.js runtime for ChromaDB compatibility
+// Force Node.js runtime for vector store compatibility
 export const runtime = "nodejs";
 
 // Increase timeout for agent execution
