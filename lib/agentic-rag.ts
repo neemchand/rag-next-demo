@@ -1,7 +1,7 @@
 import { ChatOpenAI } from "@langchain/openai";
 import { AgentExecutor, createOpenAIToolsAgent } from "langchain/agents";
 import { ChatPromptTemplate, MessagesPlaceholder } from "@langchain/core/prompts";
-import { createChromaDBTool, createOpenAIAssistantTool } from "./agent-tools";
+import { createVectorStoreTool, createOpenAIAssistantTool } from "./agent-tools";
 
 /**
  * Execute agentic RAG query with multiple data sources
@@ -28,7 +28,7 @@ export async function executeAgenticRAG(
   });
 
   // Create tools
-  const tools = [createChromaDBTool()];
+  const tools = [createVectorStoreTool()];
   
   // Add OpenAI Assistant tool if assistant ID is provided
   if (assistantId) {
@@ -42,19 +42,19 @@ export async function executeAgenticRAG(
       `You are a helpful AI assistant with access to multiple knowledge sources.
 
 Your task is to answer the user's question using the available tools:
-1. search_chromadb - Search uploaded documents in the local ChromaDB vector database
+1. search_vectorstore - Search uploaded documents in the vector database
 2. search_openai_assistant - Query the OpenAI Assistant's knowledge base (if available)
 
 STRATEGY:
-- ALWAYS start by searching ChromaDB first for ANY query
-- ChromaDB contains user-uploaded documents with metadata (category, documentType, tags)
-- After getting ChromaDB results, ALSO call the OpenAI Assistant to:
+- ALWAYS start by searching the vector store first for ANY query
+- The vector store contains user-uploaded documents with metadata (category, documentType, tags)
+- After getting vector store results, ALSO call the OpenAI Assistant to:
   * Provide additional context and background information
-  * Help synthesize and explain the ChromaDB results
-  * Fill in gaps that ChromaDB documents don't cover
+  * Help synthesize and explain the vector store results
+  * Fill in gaps that the uploaded documents don't cover
   * Give a more comprehensive and well-structured answer
 - Use BOTH sources together to provide the best possible answer
-- Prioritize information from ChromaDB (user-uploaded documents) when available
+- Prioritize information from the vector store (user-uploaded documents) when available
 - Use OpenAI Assistant to supplement and enhance the answer
 
 IMPORTANT:

@@ -4,12 +4,12 @@ import { similaritySearchWithScore } from "./vectorstore";
 import OpenAI from "openai";
 
 /**
- * Tool for querying ChromaDB vector store with metadata filtering
+ * Tool for querying the vector store (ChromaDB or Pinecone) with metadata filtering
  */
-export function createChromaDBTool() {
+export function createVectorStoreTool() {
   return new DynamicStructuredTool({
-    name: "search_chromadb",
-    description: `Search the local ChromaDB vector database for information from uploaded documents.
+    name: "search_vectorstore",
+    description: `Search the vector database for information from uploaded documents.
     Use this tool when the user asks about documents they have uploaded. You can filter by:
     - category: Aerospace_Defense, BLT, Consumer, Energy_Materials, Financials_Real_Estate, Healthcare, Industrials, Investment_Funds, Media_Entertainment, Technology
     - documentType: policy, meeting_notes, technical_doc, report, email, chat_transcript, presentation, other
@@ -33,16 +33,16 @@ export function createChromaDBTool() {
         const docsWithScores = await similaritySearchWithScore(query, resultCount * 3); // Fetch more to filter
 
         // DEBUG: Log all scores
-        console.log(`[ChromaDB Search] Query: "${query}"`);
-        console.log(`[ChromaDB Search] Total results from ChromaDB: ${docsWithScores.length}`);
+        console.log(`[VectorStore Search] Query: "${query}"`);
+        console.log(`[VectorStore Search] Total results: ${docsWithScores.length}`);
         docsWithScores.forEach(([doc, score], idx) => {
           console.log(`  [${idx}] Score: ${score.toFixed(4)}, Source: ${doc.metadata.source}, Category: ${doc.metadata.category}`);
         });
-        console.log(`[ChromaDB Search] Score threshold: ${threshold}`);
+        console.log(`[VectorStore Search] Score threshold: ${threshold}`);
 
         // Filter by score threshold (lower score = more similar)
         const filteredByScore = docsWithScores.filter(([_doc, score]) => score <= threshold);
-        console.log(`[ChromaDB Search] After score filtering: ${filteredByScore.length} documents`);
+        console.log(`[VectorStore Search] After score filtering: ${filteredByScore.length} documents`);
 
         // Filter out initialization documents, test data, and apply metadata filters
         const filteredDocs = filteredByScore
@@ -193,3 +193,8 @@ export function createOpenAIAssistantTool(assistantId: string) {
   });
 }
 
+/**
+ * Backward-compatible alias for createVectorStoreTool
+ * @deprecated Use createVectorStoreTool instead
+ */
+export const createChromaDBTool = createVectorStoreTool;
