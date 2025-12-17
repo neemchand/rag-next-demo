@@ -3,7 +3,7 @@ import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 import { Document } from "@langchain/core/documents";
 import { addDocuments } from "@/lib/vectorstore";
 
-// Force Node.js runtime for ChromaDB compatibility
+// Force Node.js runtime for vector store compatibility
 export const runtime = "nodejs";
 
 // Increase max request body size to 10MB for file uploads
@@ -68,7 +68,7 @@ async function processText(file: File): Promise<string> {
 
 /**
  * POST /api/ingest
- * Accepts text or file uploads (PDF, JSON, TXT), chunks them, and stores in ChromaDB vector store
+ * Accepts text or file uploads (PDF, JSON, TXT), chunks them, and stores in the vector store
  */
 export async function POST(request: NextRequest) {
   try {
