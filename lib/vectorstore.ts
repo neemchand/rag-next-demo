@@ -70,3 +70,16 @@ export async function similaritySearch(
   return store.similaritySearch(query, k);
 }
 
+/**
+ * Perform similarity search with scores
+ * Returns documents with their similarity scores
+ * Lower score = more similar (distance metric)
+ */
+export async function similaritySearchWithScore(
+  query: string,
+  k: number = 4
+): Promise<[Document, number][]> {
+  const store = await getVectorStore();
+  return store.similaritySearchWithScore(query, k);
+}
+
